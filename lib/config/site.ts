@@ -58,7 +58,7 @@ const DEFAULT_CONFIG: SiteConfig = {
   logoPublicId: null,
   logoBlurDataUrl: null,
   logoUrl: null,
-  activeDepartments: ["men", "women", "beauty"],
+  activeDepartments: ["men", "women", "beauty"], // men is first → default
   primaryColor: "#000000",
   seoDescription: "Shop the latest fashion trends at Riziki.",
   whatsappNumber: null,

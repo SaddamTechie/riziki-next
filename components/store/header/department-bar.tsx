@@ -2,6 +2,7 @@
 
 import { useDepartmentStore } from "@/stores/department.store";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Department } from "@/lib/config/site";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +18,17 @@ const DEPT_LABELS: Record<Department, string> = {
 
 export function DepartmentBar({ activeDepartments }: DepartmentBarProps) {
   const { selected, setDepartment, initFromConfig } = useDepartmentStore();
+  const router = useRouter();
 
   // Initialize from site config on first render
   useEffect(() => {
     initFromConfig(activeDepartments);
   }, [activeDepartments, initFromConfig]);
+
+  function handleSelect(dept: Department) {
+    setDepartment(dept); // update Zustand (mega menu, search bar, etc.)
+    router.push(`/?dept=${dept}`); // navigate to the dept storefront home
+  }
 
   return (
     <div className="border-b bg-muted/40">
@@ -29,7 +36,7 @@ export function DepartmentBar({ activeDepartments }: DepartmentBarProps) {
         {activeDepartments.map((dept) => (
           <button
             key={dept}
-            onClick={() => setDepartment(dept)}
+            onClick={() => handleSelect(dept)}
             className={cn(
               "relative px-6 py-2 text-xs font-semibold uppercase tracking-widest transition-colors",
               "hover:text-foreground focus-visible:outline-none",
