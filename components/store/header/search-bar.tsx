@@ -36,7 +36,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
     e.preventDefault();
     if (!query.trim()) return;
     const params = new URLSearchParams({ q: query });
-    if (department) params.set("dept", department);
+    if (department) params.set("department", department);
     router.push(`/products?${params.toString()}`);
     onClose();
   }

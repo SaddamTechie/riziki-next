@@ -16,7 +16,12 @@ export function NewsletterForm() {
         className="bg-background/10 border-background/20 text-background placeholder:text-background/50 focus-visible:ring-background/50"
         required
       />
-      <Button type="submit" variant="secondary" size="icon" aria-label="Subscribe">
+      <Button
+        type="submit"
+        variant="secondary"
+        size="icon"
+        aria-label="Subscribe"
+      >
         <Send className="h-4 w-4" />
       </Button>
     </form>

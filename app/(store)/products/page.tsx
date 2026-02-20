@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { products, productImages, categories } from "@/lib/db/schema";
-import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "@/lib/cache/keys";
 import type { Metadata } from "next";
@@ -27,6 +27,7 @@ type Department = "men" | "women" | "beauty" | "all";
 type SortKey = "newest" | "price_asc" | "price_desc" | "popular";
 
 interface SearchParams {
+  q?: string;
   department?: string;
   category?: string;
   sort?: string;
@@ -70,6 +71,20 @@ async function getProducts(params: SearchParams) {
   if (params.category)
     conditions.push(eq(products.categoryId, params.category));
   if (params.brand) conditions.push(eq(products.brand, params.brand));
+  if (params.q?.trim()) {
+    // Normalise query: replace whitespace with ' & ' for tsquery AND semantics
+    const tsQuery = params.q
+      .trim()
+      .split(/\s+/)
+      .map((w) => w.replace(/[^\w]/g, ""))
+      .filter(Boolean)
+      .join(" & ");
+    if (tsQuery) {
+      conditions.push(
+        sql`${products.searchVector} @@ to_tsquery('english', ${tsQuery + ":*"})`,
+      );
+    }
+  }
 
   const orderBy =
     sort === "price_asc"
@@ -187,8 +202,9 @@ export default async function ProductsPage({
 
   const filterGroups = buildFilterGroups(cats, params.department);
 
-  const heading =
-    params.sale === "true"
+  const heading = params.q
+    ? `Results for "${params.q}"`
+    : params.sale === "true"
       ? "Sale"
       : params.department === "women"
         ? "Women"

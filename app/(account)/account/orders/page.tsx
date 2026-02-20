@@ -5,10 +5,19 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { orders, orderItems } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
-import { Package, Clock, CheckCircle2, XCircle, Truck } from "lucide-react";
+import {
+  Package,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Truck,
+  ChevronRight,
+} from "lucide-react";
 
 type OrderStatus =
   | "pending"
@@ -142,9 +151,21 @@ export default async function OrdersPage() {
                 {/* Order total */}
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-muted-foreground">Total</span>
-                  <span className="font-semibold">
-                    {formatPrice(parseFloat(order.total), order.currency)}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold">
+                      {formatPrice(parseFloat(order.total), order.currency)}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 text-xs"
+                      asChild
+                    >
+                      <Link href={`/account/orders/${order.id}`}>
+                        Details <ChevronRight className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
