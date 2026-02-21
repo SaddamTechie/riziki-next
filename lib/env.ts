@@ -33,6 +33,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+
+    // Trusted origins for mobile/Expo clients (comma-separated URLs)
+    // e.g. exp://192.168.1.5:8081,http://localhost:8081
+    EXPO_ORIGIN: z.string().optional(),
   },
 
   // ─── Client-safe variables ─────────────────────────────────────────────────
@@ -57,6 +61,7 @@ export const env = createEnv({
     PAYMENT_PASSKEY: process.env.PAYMENT_PASSKEY,
     PAYMENT_CALLBACK_URL: process.env.PAYMENT_CALLBACK_URL,
     NODE_ENV: process.env.NODE_ENV,
+    EXPO_ORIGIN: process.env.EXPO_ORIGIN,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
       process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

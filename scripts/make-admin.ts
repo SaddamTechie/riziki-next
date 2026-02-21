@@ -50,17 +50,23 @@ if (!email) {
 const sql = neon(DATABASE_URL);
 const db = drizzle(sql);
 
-const [updated] = await db
-  .update(user)
-  .set({ role: "admin" })
-  .where(eq(user.email, email))
-  .returning({ id: user.id, email: user.email, name: user.name });
+async function main() {
+  const [updated] = await db
+    .update(user)
+    .set({ role: "admin" })
+    .where(eq(user.email, email))
+    .returning({ id: user.id, email: user.email, name: user.name });
 
-if (!updated) {
-  console.error(`❌  No user found with email: ${email}`);
-  console.error("    Sign up at /sign-up first, then run this script.");
-  process.exit(1);
+  if (!updated) {
+    console.error(`❌  No user found with email: ${email}`);
+    console.error("    Sign up at /sign-up first, then run this script.");
+    process.exit(1);
+  }
+
+  console.log(`✅  ${updated.name ?? updated.email} is now an admin.`);
 }
 
-console.log(`✅  ${updated.name ?? updated.email} is now an admin.`);
-process.exit(0);
+main().catch((err) => {
+  console.error("❌  Unexpected error:", err);
+  process.exit(1);
+});

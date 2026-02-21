@@ -28,10 +28,12 @@ export function NewsletterForm() {
   );
 }
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export function CopyrightYear({ siteName }: { siteName: string }) {
   return (
     <p>
-      &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
+      &copy; {CURRENT_YEAR} {siteName}. All rights reserved.
     </p>
   );
 }

@@ -28,6 +28,16 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
 
+  // ─── Trusted origins (web + Expo/mobile) ──────────────────────────────────
+  // EXPO_ORIGIN in .env.local = comma-separated list of allowed origins, e.g.
+  // exp://192.168.1.5:8081,http://localhost:8081
+  trustedOrigins: [
+    env.BETTER_AUTH_URL,
+    ...(env.EXPO_ORIGIN
+      ? env.EXPO_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean)
+      : []),
+  ],
+
   // ─── Email + Password ─────────────────────────────────────────────────────
   emailAndPassword: {
     enabled: true,
