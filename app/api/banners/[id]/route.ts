@@ -8,6 +8,7 @@ import { type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { banners } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { storage } from "@/lib/storage";
 import { revalidateTag } from "@/lib/cache/revalidate";
 import { CACHE_TAGS } from "@/lib/cache/keys";
 import {
@@ -109,9 +110,26 @@ export async function DELETE(
     const [deleted] = await db
       .delete(banners)
       .where(eq(banners.id, id))
-      .returning({ id: banners.id, department: banners.department });
+      .returning({
+        id: banners.id,
+        department: banners.department,
+        imagePublicId: banners.imagePublicId,
+        videoPublicId: banners.videoPublicId,
+      });
 
     if (!deleted) return notFound("Banner not found");
+
+    // Delete media assets from Cloudinary (fire-and-forget)
+    const cleanups = [
+      deleted.imagePublicId && storage.delete(deleted.imagePublicId),
+      deleted.videoPublicId && storage.delete(deleted.videoPublicId),
+    ].filter(Boolean) as Promise<void>[];
+
+    if (cleanups.length > 0) {
+      Promise.all(cleanups).catch((err) => {
+        console.error("[banner DELETE] cloudinary cleanup failed:", err);
+      });
+    }
 
     revalidateTag(CACHE_TAGS.banners);
     revalidateTag(CACHE_TAGS.bannersByDept(deleted.department));

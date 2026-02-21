@@ -8,6 +8,7 @@ import { type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { products, productImages, productVariants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { storage } from "@/lib/storage";
 import { revalidateTag } from "@/lib/cache/revalidate";
 import { CACHE_TAGS } from "@/lib/cache/keys";
 import {
@@ -110,12 +111,27 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+
+    // Fetch images before deleting so we can clean up Cloudinary
+    const images = await db
+      .select({ publicId: productImages.publicId })
+      .from(productImages)
+      .where(eq(productImages.productId, id));
+
     const [deleted] = await db
       .delete(products)
       .where(eq(products.id, id))
       .returning({ slug: products.slug, department: products.department });
 
     if (!deleted) return notFound("Product not found");
+
+    // Delete all product images from Cloudinary (fire-and-forget)
+    const publicIds = images.map((i) => i.publicId).filter(Boolean) as string[];
+    if (publicIds.length > 0) {
+      Promise.all(publicIds.map((pid) => storage.delete(pid))).catch((err) => {
+        console.error("[product DELETE] cloudinary cleanup failed:", err);
+      });
+    }
 
     revalidateTag(CACHE_TAGS.product(deleted.slug));
     revalidateTag(CACHE_TAGS.products);

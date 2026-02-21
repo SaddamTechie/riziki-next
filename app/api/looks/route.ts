@@ -53,17 +53,27 @@ export async function GET(request: NextRequest) {
 
 const createLookSchema = z.object({
   name: z.string().min(1),
+  // Auto-generated from name if omitted
   slug: z
     .string()
     .min(1)
-    .regex(/^[a-z0-9-]+$/),
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   description: z.string().optional(),
   coverImagePublicId: z.string().optional(),
   coverImageUrl: z.string().optional(),
   coverImageBlurDataUrl: z.string().optional(),
   department: z.enum(["men", "women", "beauty", "all"]).default("all"),
-  productIds: z.array(z.string()).min(2).max(6),
+  // Allow creating a look with no products yet (products can be added later via PATCH)
+  productIds: z.array(z.string()).max(6).default([]),
 });
+
+function toSlug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
@@ -72,26 +82,32 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const parsed = createLookSchema.safeParse(body);
-    if (!parsed.success) return badRequest(parsed.error.message);
+    if (!parsed.success) {
+      console.error("[looks POST] validation:", parsed.error.flatten());
+      return badRequest(parsed.error.message);
+    }
 
-    const { productIds, ...lookData } = parsed.data;
+    const { productIds, slug: slugInput, ...lookData } = parsed.data;
+    const slug = slugInput ?? toSlug(lookData.name);
     const id = generateId();
 
-    await db.insert(looks).values({ id, ...lookData });
+    await db.insert(looks).values({ id, slug, ...lookData });
 
-    await db.insert(lookItems).values(
-      productIds.map((productId, i) => ({
-        id: generateId(),
-        lookId: id,
-        productId,
-        sortOrder: i,
-      })),
-    );
+    if (productIds.length > 0) {
+      await db.insert(lookItems).values(
+        productIds.map((productId, i) => ({
+          id: generateId(),
+          lookId: id,
+          productId,
+          sortOrder: i,
+        })),
+      );
+    }
 
     revalidateTag(CACHE_TAGS.looks);
     revalidateTag(CACHE_TAGS.looksByDept(parsed.data.department));
 
-    return created({ id });
+    return created({ id, slug });
   } catch (e) {
     console.error("[looks POST]", e);
     return serverError();

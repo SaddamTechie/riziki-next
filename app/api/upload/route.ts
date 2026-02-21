@@ -43,29 +43,62 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/** POST a base64 or URL for server-side upload (e.g. from admin form) */
+type UploadFolder =
+  | "products"
+  | "banners"
+  | "looks"
+  | "categories"
+  | "avatars"
+  | "config";
+
+/** POST a file for server-side upload (e.g. from admin form).
+ *
+ * Accepts two content types:
+ *   - `multipart/form-data`  — field `file` (File/Blob) + optional field `folder`
+ *   - `application/json`     — `{ file: "<base64 or URL>", folder?: "..." }`
+ */
 export async function POST(request: NextRequest) {
   const authResult = await requireAdmin();
   if (isErrorResponse(authResult)) return authResult;
 
   try {
-    const body = await request.json();
-    const { file, folder = "products" } = body as {
-      file: string;
-      folder?: string;
-    };
+    let fileData: string;
+    let folder: UploadFolder = "products";
 
-    if (!file) return badRequest("file is required");
+    const contentType = request.headers.get("content-type") ?? "";
 
-    const result = await storage.upload(file, {
-      folder: folder as
-        | "products"
-        | "banners"
-        | "looks"
-        | "categories"
-        | "avatars"
-        | "config",
-    });
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const fileField = formData.get("file");
+      const folderField = formData.get("folder");
+
+      if (!fileField) return badRequest("file is required");
+
+      if (folderField && typeof folderField === "string") {
+        folder = folderField as UploadFolder;
+      }
+
+      if (fileField instanceof File) {
+        // Convert File → base64 data URL for Cloudinary upload
+        const buffer = await fileField.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString("base64");
+        fileData = `data:${fileField.type};base64,${base64}`;
+      } else {
+        fileData = fileField as string;
+      }
+    } else {
+      // JSON body: { file: string, folder?: string }
+      const body = await request.json();
+      const { file, folder: f = "products" } = body as {
+        file: string;
+        folder?: string;
+      };
+      if (!file) return badRequest("file is required");
+      fileData = file;
+      folder = f as UploadFolder;
+    }
+
+    const result = await storage.upload(fileData, { folder });
 
     return created(result);
   } catch (e) {
