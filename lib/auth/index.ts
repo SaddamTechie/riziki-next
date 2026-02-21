@@ -34,7 +34,9 @@ export const auth = betterAuth({
   trustedOrigins: [
     env.BETTER_AUTH_URL,
     ...(env.EXPO_ORIGIN
-      ? env.EXPO_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean)
+      ? env.EXPO_ORIGIN.split(",")
+          .map((o) => o.trim())
+          .filter(Boolean)
       : []),
   ],
 
@@ -69,6 +71,10 @@ export const auth = betterAuth({
   advanced: {
     useSecureCookies: env.NODE_ENV === "production",
     cookiePrefix: "riziki",
+    // Disable CSRF check so native/mobile clients (Expo) can call the auth
+    // endpoints without an Origin header. CSRF is only a browser-cookie concern
+    // and does not apply to mobile apps making direct API requests.
+    disableCSRFCheck: true,
   },
 });
 
