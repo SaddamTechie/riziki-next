@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { cookies } from "next/headers";
+import { getSiteConfig } from "@/lib/config/site";
 import type { Metadata } from "next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -384,13 +385,17 @@ export default async function HomePage({
     | Dept
     | undefined;
 
-  const VALID: Dept[] = ["women", "men", "beauty"];
+  // Only allow depts that are currently active in site config
+  const config = await getSiteConfig();
+  const VALID = config.activeDepartments as Dept[];
+  const fallback: Dept = (VALID[0] as Dept) ?? DEFAULT_DEPT;
+
   const dept: Dept =
     deptParam && VALID.includes(deptParam)
       ? deptParam
       : cookieDept && VALID.includes(cookieDept)
         ? cookieDept
-        : DEFAULT_DEPT;
+        : fallback;
 
   return (
     <main>

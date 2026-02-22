@@ -139,6 +139,7 @@ export function MainNav({ config }: MainNavProps) {
       <MegaMenuMobile
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        activeDepartments={config.activeDepartments}
       />
     </div>
   );

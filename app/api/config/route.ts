@@ -6,10 +6,8 @@
 import { type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { siteConfig } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import { revalidateTag } from "@/lib/cache/revalidate";
 import { CACHE_TAGS } from "@/lib/cache/keys";
-import { getSiteConfig } from "@/lib/config/site";
 import {
   ok,
   requireAdmin,
@@ -19,8 +17,46 @@ import {
 
 export async function GET() {
   try {
-    const config = await getSiteConfig();
-    return ok(config);
+    // Query DB directly — bypass unstable_cache (which is for server components).
+    // External API consumers (e.g. Expo) should always get fresh data.
+    const rows = await db.select().from(siteConfig);
+    const map = new Map(
+      rows.map((r) => [r.key, { value: r.value, type: r.type }]),
+    );
+
+    function get<T>(key: string, fallback: T): T {
+      const row = map.get(key);
+      if (!row) return fallback;
+      try {
+        if (row.type === "json") return JSON.parse(row.value) as T;
+        if (row.type === "boolean")
+          return (row.value === "true") as unknown as T;
+        if (row.type === "number") return Number(row.value) as unknown as T;
+        return row.value as unknown as T;
+      } catch {
+        return fallback;
+      }
+    }
+
+    return ok({
+      siteName: get("site_name", "Riziki"),
+      siteTagline: get("site_tagline", "Discover your style"),
+      logoPublicId: get("logo_public_id", null),
+      logoBlurDataUrl: get("logo_blur_data_url", null),
+      logoUrl: get("logo_url", null),
+      activeDepartments: get("active_departments", ["men", "women", "beauty"]),
+      primaryColor: get("primary_color", "#000000"),
+      seoDescription: get(
+        "seo_description",
+        "Shop the latest fashion trends at Riziki.",
+      ),
+      whatsappNumber: get("whatsapp_number", null),
+      currency: get("currency", "KES"),
+      currencySymbol: get("currency_symbol", "KSh"),
+      shippingPolicy: get("shipping_policy", null),
+      returnsPolicy: get("returns_policy", null),
+      socialLinks: get("social_links", {}),
+    });
   } catch (e) {
     console.error("[config GET]", e);
     return serverError();
@@ -34,15 +70,22 @@ export async function PUT(request: NextRequest) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
 
+    // Skip null / empty-string values — don't overwrite existing DB data
+    const entries = Object.entries(body).filter(
+      ([, value]) => value !== null && value !== undefined && value !== "",
+    );
+
+    if (entries.length === 0) return ok({ updated: 0 });
+
     // Upsert each key
     await Promise.all(
-      Object.entries(body).map(([key, value]) => {
+      entries.map(([key, value]) => {
         const type =
           typeof value === "boolean"
             ? "boolean"
             : typeof value === "number"
               ? "number"
-              : typeof value === "object"
+              : Array.isArray(value) || typeof value === "object"
                 ? "json"
                 : "string";
 

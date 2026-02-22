@@ -39,6 +39,7 @@ interface MegaMenuSection {
 interface MegaMenuMobileProps {
   isOpen: boolean;
   onClose: () => void;
+  activeDepartments: string[];
 }
 
 async function fetchMegaMenu(dept: string): Promise<MegaMenuSection[]> {
@@ -49,7 +50,11 @@ async function fetchMegaMenu(dept: string): Promise<MegaMenuSection[]> {
   return res.json();
 }
 
-export function MegaMenuMobile({ isOpen, onClose }: MegaMenuMobileProps) {
+export function MegaMenuMobile({
+  isOpen,
+  onClose,
+  activeDepartments,
+}: MegaMenuMobileProps) {
   const { selected: department } = useDepartmentStore();
   const [openItem, setOpenItem] = useState<string>("");
 
@@ -72,20 +77,23 @@ export function MegaMenuMobile({ isOpen, onClose }: MegaMenuMobileProps) {
         {/* Quick links */}
         <div className="border-b px-4 py-3">
           <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            {["Women", "Men", "Beauty", "Sale"].map((label) => (
+            {activeDepartments.map((dept) => (
               <Link
-                key={label}
-                href={
-                  label === "Sale"
-                    ? "/products?sale=true"
-                    : `/products?department=${label.toLowerCase()}`
-                }
+                key={dept}
+                href={`/products?department=${dept}`}
                 onClick={onClose}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground capitalize"
               >
-                {label}
+                {dept}
               </Link>
             ))}
+            <Link
+              href="/products?sale=true"
+              onClick={onClose}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              Sale
+            </Link>
           </nav>
         </div>
 

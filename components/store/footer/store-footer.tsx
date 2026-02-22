@@ -2,8 +2,10 @@ import Link from "next/link";
 import { getSiteConfig } from "@/lib/config/site";
 import { StorageImage } from "@/components/shared/storage-image";
 import { Separator } from "@/components/ui/separator";
-import { Instagram, Twitter, Facebook, Youtube } from "lucide-react";
+import { Instagram, Twitter, Facebook, Youtube, Link2 } from "lucide-react";
 import { NewsletterForm, CopyrightYear } from "./footer-client";
+import type { SocialLinks } from "@/lib/config/site";
+import type { LucideIcon } from "lucide-react";
 
 const FOOTER_NAV = [
   {
@@ -38,12 +40,17 @@ const FOOTER_NAV = [
   },
 ];
 
-const SOCIAL_LINKS = [
-  { icon: Instagram, label: "Instagram", href: "https://instagram.com" },
-  { icon: Twitter, label: "Twitter / X", href: "https://twitter.com" },
-  { icon: Facebook, label: "Facebook", href: "https://facebook.com" },
-  { icon: Youtube, label: "YouTube", href: "https://youtube.com" },
-];
+const SOCIAL_PLATFORM_META: Record<
+  keyof SocialLinks,
+  { label: string; icon: LucideIcon }
+> = {
+  instagram: { label: "Instagram", icon: Instagram },
+  twitter: { label: "Twitter / X", icon: Twitter },
+  facebook: { label: "Facebook", icon: Facebook },
+  youtube: { label: "YouTube", icon: Youtube },
+  tiktok: { label: "TikTok", icon: Link2 },
+  pinterest: { label: "Pinterest", icon: Link2 },
+};
 
 export async function StoreFooter() {
   const config = await getSiteConfig();
@@ -93,18 +100,32 @@ export async function StoreFooter() {
 
             {/* Social icons */}
             <div className="mt-6 flex items-center gap-3">
-              {SOCIAL_LINKS.map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border hover:bg-foreground hover:text-background transition-colors"
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </a>
-              ))}
+              {(
+                Object.entries(config.socialLinks ?? {}) as [
+                  keyof SocialLinks,
+                  string,
+                ][]
+              )
+                .filter(([, url]) => !!url)
+                .map(([platform, url]) => {
+                  const meta = SOCIAL_PLATFORM_META[platform] ?? {
+                    label: platform,
+                    icon: Link2,
+                  };
+                  const Icon = meta.icon;
+                  return (
+                    <a
+                      key={platform}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={meta.label}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border hover:bg-foreground hover:text-background transition-colors"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </a>
+                  );
+                })}
             </div>
           </div>
 

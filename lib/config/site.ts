@@ -20,6 +20,15 @@ import { CACHE_TAGS, CACHE_TTL } from "@/lib/cache/keys";
 
 export type Department = "men" | "women" | "beauty";
 
+export interface SocialLinks {
+  instagram?: string;
+  tiktok?: string;
+  facebook?: string;
+  twitter?: string;
+  pinterest?: string;
+  youtube?: string;
+}
+
 export interface SiteConfig {
   /** Store display name */
   siteName: string;
@@ -47,6 +56,8 @@ export interface SiteConfig {
   shippingPolicy: string | null;
   /** Returns policy text */
   returnsPolicy: string | null;
+  /** Social media profile URLs */
+  socialLinks: SocialLinks;
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -66,6 +77,7 @@ const DEFAULT_CONFIG: SiteConfig = {
   currencySymbol: "KSh",
   shippingPolicy: null,
   returnsPolicy: null,
+  socialLinks: {},
 };
 
 // ─── Fetcher (cached) ─────────────────────────────────────────────────────────
@@ -107,6 +119,7 @@ async function fetchSiteConfig(): Promise<SiteConfig> {
     currencySymbol: get("currency_symbol", DEFAULT_CONFIG.currencySymbol),
     shippingPolicy: get("shipping_policy", DEFAULT_CONFIG.shippingPolicy),
     returnsPolicy: get("returns_policy", DEFAULT_CONFIG.returnsPolicy),
+    socialLinks: get("social_links", DEFAULT_CONFIG.socialLinks),
   };
 }
 
