@@ -1,10 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ─── Partial Prerendering (PPR) ───────────────────────────────────────────
-  // `experimental.ppr` was merged into `cacheComponents` in Next.js 16
-  cacheComponents: true,
-
   // ─── Experimental ─────────────────────────────────────────────────────────
   experimental: {
     // Improve server component performance

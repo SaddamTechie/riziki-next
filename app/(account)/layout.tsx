@@ -3,6 +3,8 @@
  * Redirects to sign-in if not authenticated.
  */
 
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
