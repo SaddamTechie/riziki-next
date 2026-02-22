@@ -97,18 +97,26 @@ export function ProductCard({
         style={{ aspectRatio }}
       >
         {/* Primary image */}
-        <StorageImage
-          src={product.imagePublicId}
-          blurDataUrl={product.imageBlurDataUrl ?? undefined}
-          alt={product.name}
-          fill
-          className={cn(
-            "object-cover transition-transform duration-500 ease-out",
-            hovered && product.hoverImagePublicId ? "opacity-0" : "opacity-100",
-            hovered && !product.hoverImagePublicId && "scale-105",
-          )}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
+        {product.imagePublicId ? (
+          <StorageImage
+            src={product.imagePublicId}
+            blurDataUrl={product.imageBlurDataUrl ?? undefined}
+            alt={product.name}
+            fill
+            className={cn(
+              "object-cover transition-transform duration-500 ease-out",
+              hovered && product.hoverImagePublicId
+                ? "opacity-0"
+                : "opacity-100",
+              hovered && !product.hoverImagePublicId && "scale-105",
+            )}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">
+            No image
+          </div>
+        )}
 
         {/* Hover / alternate image */}
         {product.hoverImagePublicId && (

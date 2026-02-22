@@ -34,6 +34,14 @@ export function ProductImageGallery({
   const [activeIndex, setActiveIndex] = useState(0);
   const active = images[activeIndex];
 
+  if (!active) {
+    return (
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted flex items-center justify-center text-muted-foreground text-sm">
+        No images
+      </div>
+    );
+  }
+
   function prev() {
     setActiveIndex((i) => (i - 1 + images.length) % images.length);
   }

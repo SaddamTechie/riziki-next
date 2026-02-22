@@ -30,6 +30,11 @@ const updateProductSchema = z
     categoryId: z.string().min(1),
     department: z.enum(["men", "women", "beauty", "all"]),
     tags: z.array(z.string()),
+    price: z.string(),
+    compareAtPrice: z.string().nullable(),
+    brand: z.string().nullable(),
+    isNew: z.boolean(),
+    isSale: z.boolean(),
     isFeatured: z.boolean(),
     isActive: z.boolean(),
   })
