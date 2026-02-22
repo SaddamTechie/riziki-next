@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   title: "Sustainability",
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
     "Our commitment to responsible sourcing, eco-friendly packaging and reducing fashion's environmental impact.",
 };
 
-export default function SustainabilityPage() {
+export default async function SustainabilityPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Sustainability"
@@ -18,10 +21,10 @@ export default function SustainabilityPage() {
           Responsible Sourcing
         </h2>
         <p>
-          Every brand on Riziki is evaluated against our supplier code of
-          conduct, which requires fair wages, safe working conditions, and
-          compliance with local labour laws. We conduct annual audits of our key
-          suppliers and publish the results on request.
+          Every brand on {config.siteName} is evaluated against our supplier
+          code of conduct, which requires fair wages, safe working conditions,
+          and compliance with local labour laws. We conduct annual audits of our
+          key suppliers and publish the results on request.
         </p>
       </section>
 
@@ -69,8 +72,11 @@ export default function SustainabilityPage() {
         <p>
           We believe accountability requires transparency. If you have ideas,
           suggestions or concerns about our sustainability practices, email{" "}
-          <a href="mailto:sustainability@riziki.co.ke" className="underline">
-            sustainability@riziki.co.ke
+          <a
+            href={contactEmail ? `mailto:${contactEmail}` : "#"}
+            className="underline"
+          >
+            {contactEmail ?? "our sustainability team"}
           </a>
           .
         </p>

@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   title: "Returns & Exchanges",
   description: "Learn about our hassle-free 14-day return and exchange policy.",
 };
 
-export default function ReturnsPage() {
+export default async function ReturnsPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Returns & Exchanges"
@@ -68,8 +71,11 @@ export default function ReturnsPage() {
         <p>
           Need a different size or colour? Start a return and place a new order
           — we&apos;ll express-process the replacement. Alternatively email{" "}
-          <a href="mailto:support@riziki.co.ke" className="underline">
-            support@riziki.co.ke
+          <a
+            href={contactEmail ? `mailto:${contactEmail}` : "#"}
+            className="underline"
+          >
+            {contactEmail ?? "our support team"}
           </a>{" "}
           to arrange a direct exchange.
         </p>
@@ -77,8 +83,11 @@ export default function ReturnsPage() {
 
       <p className="text-xs text-muted-foreground">
         Last updated: January 2026. For questions please contact{" "}
-        <a href="mailto:support@riziki.co.ke" className="underline">
-          support@riziki.co.ke
+        <a
+          href={contactEmail ? `mailto:${contactEmail}` : "#"}
+          className="underline"
+        >
+          {contactEmail ?? "our support team"}
         </a>
         .
       </p>

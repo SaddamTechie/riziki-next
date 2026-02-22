@@ -24,10 +24,12 @@ export function MainNav({ config }: MainNavProps) {
   const wishlistCount = useWishlistStore((s) => s.count());
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const count = itemCount();
 
   // Close mobile menu on resize to desktop
   useEffect(() => {
+    setMounted(true);
     const handleResize = () => {
       if (window.innerWidth >= 1024) setIsMobileMenuOpen(false);
     };
@@ -55,7 +57,7 @@ export function MainNav({ config }: MainNavProps) {
       {/* Logo */}
       <Link
         href="/"
-        className="flex-shrink-0 font-heading text-xl font-semibold tracking-tight md:text-2xl"
+        className="shrink-0 font-heading text-xl font-semibold tracking-tight md:text-2xl"
         aria-label={config.siteName}
       >
         {config.logoUrl ? (
@@ -93,11 +95,11 @@ export function MainNav({ config }: MainNavProps) {
         {/* Wishlist */}
         <Link
           href="/account/wishlist"
-          aria-label={`Wishlist (${wishlistCount})`}
+          aria-label={`Wishlist (${mounted ? wishlistCount : 0})`}
         >
           <Button variant="ghost" size="icon" className="relative">
             <Heart className="h-5 w-5" />
-            {wishlistCount > 0 && (
+            {mounted && wishlistCount > 0 && (
               <Badge className="absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-[10px]">
                 {wishlistCount > 99 ? "99+" : wishlistCount}
               </Badge>
@@ -110,11 +112,11 @@ export function MainNav({ config }: MainNavProps) {
           variant="ghost"
           size="icon"
           className="relative"
-          aria-label={`Cart (${count} items)`}
+          aria-label={`Cart (${mounted ? count : 0} items)`}
           onClick={openCart}
         >
           <ShoppingBag className="h-5 w-5" />
-          {count > 0 && (
+          {mounted && count > 0 && (
             <Badge className="absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-[10px]">
               {count > 99 ? "99+" : count}
             </Badge>

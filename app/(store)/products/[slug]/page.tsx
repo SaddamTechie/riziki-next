@@ -10,7 +10,7 @@ import {
   lookItems,
   categories as categoriesTable,
 } from "@/lib/db/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import { ProductImageGallery } from "@/components/store/product/product-image-gallery";
 import { VariantPicker } from "@/components/store/product/variant-picker";
 import { ProductCard } from "@/components/store/product/product-card";
@@ -92,10 +92,12 @@ async function getRelatedLooks(productId: string) {
 
   if (!items.length) return [];
 
+  const lookIds = items.map((i) => i.lookId);
+
   const lookData = await db
     .select()
     .from(looks)
-    .where(and(eq(looks.isActive, true)))
+    .where(and(eq(looks.isActive, true), inArray(looks.id, lookIds)))
     .limit(3);
 
   // Map to the shape BuyTheLookSection expects

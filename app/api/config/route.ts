@@ -56,6 +56,7 @@ export async function GET() {
       shippingPolicy: get("shipping_policy", null),
       returnsPolicy: get("returns_policy", null),
       socialLinks: get("social_links", {}),
+      contactEmail: get("contact_email", null),
     });
   } catch (e) {
     console.error("[config GET]", e);

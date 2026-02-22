@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "How Riziki collects, uses and protects your personal data.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  return {
+    title: "Privacy Policy",
+    description: `How ${config.siteName} collects, uses and protects your personal data.`,
+  };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Privacy Policy"
@@ -70,8 +76,11 @@ export default function PrivacyPage() {
           Under Kenyan data protection law and GDPR (where applicable) you have
           the right to access, correct, delete, or export your personal data.
           Submit requests to{" "}
-          <a href="mailto:privacy@riziki.co.ke" className="underline">
-            privacy@riziki.co.ke
+          <a
+            href={contactEmail ? `mailto:${contactEmail}` : "#"}
+            className="underline"
+          >
+            {contactEmail ?? "our privacy team"}
           </a>
           . We will respond within 30 days.
         </p>
@@ -90,8 +99,11 @@ export default function PrivacyPage() {
         <h2 className="font-heading text-base font-bold">7. Contact</h2>
         <p>
           For privacy-related questions contact our Data Protection Officer:{" "}
-          <a href="mailto:privacy@riziki.co.ke" className="underline">
-            privacy@riziki.co.ke
+          <a
+            href={contactEmail ? `mailto:${contactEmail}` : "#"}
+            className="underline"
+          >
+            {contactEmail ?? "our privacy team"}
           </a>
           .
         </p>

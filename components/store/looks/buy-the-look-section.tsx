@@ -64,7 +64,7 @@ export function BuyTheLookSection({ looks }: BuyTheLookSectionProps) {
               />
 
               {/* Main look image */}
-              <div className="relative aspect-[3/4] overflow-hidden">
+              <div className="relative aspect-3/4 overflow-hidden">
                 <StorageImage
                   src={look.imagePublicId}
                   blurDataUrl={look.imageBlurDataUrl ?? undefined}
@@ -74,7 +74,7 @@ export function BuyTheLookSection({ looks }: BuyTheLookSectionProps) {
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/10 to-transparent" />
 
                 {/* Product thumbnails strip */}
                 <div className="absolute bottom-16 left-3 flex gap-2">

@@ -67,7 +67,7 @@ export function VirtualProductGrid({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () =>
-      typeof window !== "undefined" ? (window as unknown as Element) : null,
+      typeof document !== "undefined" ? document.documentElement : null,
     estimateSize: estimateRowHeight,
     overscan: 3,
   });
@@ -80,7 +80,7 @@ export function VirtualProductGrid({
       >
         {Array.from({ length: columns * 2 }).map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+            <Skeleton className="aspect-3/4 w-full rounded-lg" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3.5 w-1/2" />
           </div>

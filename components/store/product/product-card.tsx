@@ -11,6 +11,7 @@ import { useWishlistStore } from "@/stores/wishlist.store";
 import { useCartStore } from "@/stores/cart.store";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export interface ProductCardData {
   id: string;
@@ -46,10 +47,10 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
-
+  const hydrated = useHydrated();
   const { toggleWishlist, isWishlisted } = useWishlistStore();
   const { addItem, openCart } = useCartStore();
-  const wishlisted = isWishlisted(product.id);
+  const wishlisted = hydrated && isWishlisted(product.id);
 
   const discountPercent =
     product.compareAtPrice && product.compareAtPrice > product.price

@@ -73,7 +73,7 @@ export function RecentlyViewed({
               href={`/products/${item.slug}`}
               className="group inline-block w-40 shrink-0"
             >
-              <div className="relative aspect-[3/4] w-40 overflow-hidden rounded-lg bg-muted">
+              <div className="relative aspect-3/4 w-40 overflow-hidden rounded-lg bg-muted">
                 <StorageImage
                   src={item.imagePublicId}
                   blurDataUrl={item.imageBlurDataUrl ?? undefined}

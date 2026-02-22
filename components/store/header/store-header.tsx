@@ -19,7 +19,7 @@ interface StoreHeaderProps {
 
 export function StoreHeader({ config }: StoreHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       {/* Department switcher — only shown if more than 1 dept active */}
       {config.activeDepartments.length > 1 && (
         <DepartmentBar activeDepartments={config.activeDepartments} />

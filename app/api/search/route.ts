@@ -2,8 +2,6 @@ import { searchProducts } from "@/lib/search";
 import { ok, badRequest, serverError } from "@/lib/api/helpers";
 import { type NextRequest } from "next/server";
 
-export const runtime = "edge"; // fast edge search
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

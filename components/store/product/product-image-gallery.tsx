@@ -36,7 +36,7 @@ export function ProductImageGallery({
 
   if (!active) {
     return (
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted flex items-center justify-center text-muted-foreground text-sm">
+      <div className="relative aspect-3/4 w-full overflow-hidden rounded-xl bg-muted flex items-center justify-center text-muted-foreground text-sm">
         No images
       </div>
     );
@@ -81,7 +81,7 @@ export function ProductImageGallery({
 
       {/* Main image */}
       <div className="relative order-1 flex-1 md:order-2">
-        <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
+        <div className="relative aspect-3/4 overflow-hidden rounded-xl bg-muted">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={active.publicId}
@@ -149,7 +149,7 @@ export function ProductImageGallery({
                   wrapperStyle={{ width: "100%" }}
                   contentStyle={{ width: "100%" }}
                 >
-                  <div className="relative aspect-[3/4] w-full">
+                  <div className="relative aspect-3/4 w-full">
                     <StorageImage
                       src={active.publicId}
                       alt={active.altText ?? productName}

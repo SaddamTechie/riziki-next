@@ -37,6 +37,18 @@ export const env = createEnv({
     // Trusted origins for mobile/Expo clients (comma-separated URLs)
     // e.g. exp://192.168.1.5:8081,http://localhost:8081
     EXPO_ORIGIN: z.string().optional(),
+
+    // X-App-Token secret — Expo app must send this header on every API request.
+    // Leave empty in dev to skip the check entirely.
+    APP_SECRET: z.string().min(16).optional(),
+
+    // Bootstrap defaults — used as out-of-the-box values before the shop owner
+    // configures anything via the Expo admin app. Safe on redeployments because
+    // once a DB row exists the DB value always wins.
+    INITIAL_SITE_NAME: z.string().min(1).optional(),
+    INITIAL_SITE_TAGLINE: z.string().optional(),
+    INITIAL_SEO_DESCRIPTION: z.string().optional(),
+    INITIAL_CONTACT_EMAIL: z.string().email().optional(),
   },
 
   // ─── Client-safe variables ─────────────────────────────────────────────────
@@ -62,6 +74,11 @@ export const env = createEnv({
     PAYMENT_CALLBACK_URL: process.env.PAYMENT_CALLBACK_URL,
     NODE_ENV: process.env.NODE_ENV,
     EXPO_ORIGIN: process.env.EXPO_ORIGIN,
+    APP_SECRET: process.env.APP_SECRET,
+    INITIAL_SITE_NAME: process.env.INITIAL_SITE_NAME,
+    INITIAL_SITE_TAGLINE: process.env.INITIAL_SITE_TAGLINE,
+    INITIAL_SEO_DESCRIPTION: process.env.INITIAL_SEO_DESCRIPTION,
+    INITIAL_CONTACT_EMAIL: process.env.INITIAL_CONTACT_EMAIL,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
       process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

@@ -46,7 +46,7 @@ export default function WishlistPage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {productIds.map((id) => (
             <div key={id} className="space-y-2">
-              <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+              <Skeleton className="aspect-3/4 w-full rounded-lg" />
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3.5 w-1/2" />
             </div>

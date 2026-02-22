@@ -105,7 +105,7 @@ export function MegaMenuDesktop() {
                 <div className="rounded-lg border bg-background p-6 shadow-xl">
                   <div className="grid auto-cols-fr grid-flow-col gap-8">
                     {/* Text links column */}
-                    <ul className="flex min-w-[140px] flex-col gap-2">
+                    <ul className="flex min-w-35 flex-col gap-2">
                       {section.items
                         .filter((item) => !item.imageUrl && !item.imagePublicId)
                         .map((item) => (
@@ -139,7 +139,7 @@ export function MegaMenuDesktop() {
                           className="group block w-40"
                           onClick={() => setOpenSection(null)}
                         >
-                          <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-md bg-muted">
+                          <div className="relative mb-2 aspect-3/4 overflow-hidden rounded-md bg-muted">
                             <StorageImage
                               src={item.imagePublicId ?? item.imageUrl!}
                               blurDataUrl={item.imageBlurDataUrl ?? undefined}

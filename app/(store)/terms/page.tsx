@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "The terms and conditions governing your use of Riziki.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  return {
+    title: "Terms of Service",
+    description: `The terms and conditions governing your use of ${config.siteName}.`,
+  };
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Terms of Service"
@@ -17,7 +23,7 @@ export default function TermsPage() {
           1. Acceptance of Terms
         </h2>
         <p>
-          By accessing or using riziki.co.ke you agree to be bound by these
+          By accessing or using this website you agree to be bound by these
           Terms of Service and our Privacy Policy. If you do not agree, please
           stop using the website immediately.
         </p>
@@ -30,8 +36,11 @@ export default function TermsPage() {
           responsible for maintaining the confidentiality of your password and
           for all activities that occur under your account. Notify us
           immediately of any unauthorised use at{" "}
-          <a href="mailto:support@riziki.co.ke" className="underline">
-            support@riziki.co.ke
+          <a
+            href={contactEmail ? `mailto:${contactEmail}` : "#"}
+            className="underline"
+          >
+            {contactEmail ?? "our support team"}
           </a>
           .
         </p>
@@ -55,9 +64,9 @@ export default function TermsPage() {
         </h2>
         <p>
           All content on this website — including text, images, logos and design
-          — is owned by or licensed to Riziki Limited and protected by copyright
-          law. You may not reproduce or redistribute any content without our
-          express written permission.
+          — is owned by or licensed to {config.siteName} and protected by
+          copyright law. You may not reproduce or redistribute any content
+          without our express written permission.
         </p>
       </section>
 
@@ -66,9 +75,9 @@ export default function TermsPage() {
           5. Limitation of Liability
         </h2>
         <p>
-          To the fullest extent permitted by law, Riziki shall not be liable for
-          indirect, incidental or consequential damages arising from your use of
-          the website or any products purchased through it.
+          To the fullest extent permitted by law, {config.siteName} shall not be
+          liable for indirect, incidental or consequential damages arising from
+          your use of the website or any products purchased through it.
         </p>
       </section>
 

@@ -10,6 +10,7 @@ import { Heart, ShoppingBag, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 const LAST_SIZE_KEY = "riziki_last_size";
 
@@ -47,7 +48,8 @@ export function VariantPicker({
 }: VariantPickerProps) {
   const { addItem, openCart } = useCartStore();
   const { toggleWishlist, isWishlisted } = useWishlistStore();
-  const wishlisted = isWishlisted(productId);
+  const hydrated = useHydrated();
+  const wishlisted = hydrated && isWishlisted(productId);
 
   // Unique sizes and colors
   const sizes = Array.from(new Set(variants.map((v) => v.size)));
@@ -55,16 +57,16 @@ export function VariantPicker({
   const hasColors =
     colors.length > 1 || (colors.length === 1 && colors[0] !== "");
 
-  // Pre-select remembered size
-  const [selectedSize, setSelectedSize] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const last = localStorage.getItem(LAST_SIZE_KEY);
-      if (last && sizes.includes(last)) return last;
-    }
-    return sizes[0] ?? "";
-  });
+  // Pre-select remembered size (read localStorage only after mount)
+  const [selectedSize, setSelectedSize] = useState<string>(sizes[0] ?? "");
   const [selectedColor, setSelectedColor] = useState(colors[0] ?? "");
   const [addedAnim, setAddedAnim] = useState(false);
+
+  // Restore last used size from localStorage after hydration
+  useEffect(() => {
+    const last = localStorage.getItem(LAST_SIZE_KEY);
+    if (last && sizes.includes(last)) setSelectedSize(last);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist size selection
   useEffect(() => {
@@ -180,7 +182,7 @@ export function VariantPicker({
                 key={size}
                 onClick={() => !oos && setSelectedSize(size)}
                 className={cn(
-                  "relative min-w-[3rem] rounded-md border px-3 py-1.5 text-sm font-medium transition-all",
+                  "relative min-w-12 rounded-md border px-3 py-1.5 text-sm font-medium transition-all",
                   selectedSize === size
                     ? "border-foreground bg-foreground text-background"
                     : "border-input hover:border-foreground/60",

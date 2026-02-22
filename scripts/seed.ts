@@ -85,10 +85,14 @@ async function seed() {
   // ── 2. Site config ─────────────────────────────────────────────────────────
   console.log("⚙️   Seeding site config...");
   await db.insert(schema.siteConfig).values([
-    { key: "site_name", value: "Riziki", type: "string" },
+    {
+      key: "site_name",
+      value: process.env.INITIAL_SITE_NAME ?? "My Store",
+      type: "string",
+    },
     {
       key: "site_tagline",
-      value: "Fashion That Moves With You",
+      value: process.env.INITIAL_SITE_TAGLINE ?? "Fashion That Moves With You",
       type: "string",
     },
     { key: "primary_color", value: "#1a1a1a", type: "string" },
@@ -98,7 +102,8 @@ async function seed() {
     {
       key: "seo_description",
       value:
-        "Shop the latest fashion trends at Riziki — premium African fashion for women, men, and beauty.",
+        process.env.INITIAL_SEO_DESCRIPTION ??
+        "Shop the latest fashion trends.",
       type: "string",
     },
     {
