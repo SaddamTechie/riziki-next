@@ -36,8 +36,10 @@ export function SearchBar({ onClose }: SearchBarProps) {
     e.preventDefault();
     if (!query.trim()) return;
     const params = new URLSearchParams({ q: query });
-    if (department) params.set("department", department);
-    router.push(`/products?${params.toString()}`);
+    // Navigate to the dept-scoped products page when a dept is active,
+    // otherwise fall back to the global /products search page.
+    const base = department ? `/${department}/products` : "/products";
+    router.push(`${base}?${params.toString()}`);
     onClose();
   }
 

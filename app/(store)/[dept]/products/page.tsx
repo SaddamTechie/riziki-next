@@ -1,10 +1,13 @@
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { products, productImages, categories } from "@/lib/db/schema";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "@/lib/cache/keys";
 import type { Metadata } from "next";
+import type { Department } from "@/lib/config/site";
+import { getSiteConfig } from "@/lib/config/site";
 import { VirtualProductGrid } from "@/components/store/product/virtual-product-grid";
 import {
   ProductFilters,
@@ -14,26 +17,51 @@ import {
 import { SortSelector } from "@/components/store/product/sort-selector";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// ─── Metadata ─────────────────────────────────────────────────────────────────
-
-export const metadata: Metadata = {
-  title: "All Products",
-  description: "Browse our full collection of fashion, accessories and more.",
-};
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Department = "men" | "women" | "beauty" | "all";
+type Dept = "men" | "women" | "beauty";
 type SortKey = "newest" | "price_asc" | "price_desc" | "popular";
 
+// dept comes from the URL segment — NOT a search param
 interface SearchParams {
   q?: string;
-  department?: string;
   category?: string;
   sort?: string;
   sale?: string;
   brand?: string;
   page?: string;
+}
+
+const DEPT_LABELS: Record<Dept, string> = {
+  men: "Men",
+  women: "Women",
+  beauty: "Beauty",
+};
+
+// ─── Metadata ─────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ dept: string }>;
+}): Promise<Metadata> {
+  const { dept } = await params;
+  const label = DEPT_LABELS[dept as Dept] ?? dept;
+  return {
+    title: `${label} — All Products`,
+    description: `Browse our full ${label.toLowerCase()} collection of fashion, accessories and more.`,
+    openGraph: {
+      title: `${label} — All Products`,
+      description: `Browse our full ${label.toLowerCase()} collection of fashion, accessories and more.`,
+      images: [{ url: "/logo.png", alt: "Riziki" }],
+    },
+    twitter: {
+      card: "summary",
+      title: `${label} — All Products`,
+      description: `Browse our full ${label.toLowerCase()} collection of fashion, accessories and more.`,
+      images: ["/logo.png"],
+    },
+  };
 }
 
 // ─── Data helpers (cached) ────────────────────────────────────────────────────
@@ -55,24 +83,23 @@ const getCategories = unstable_cache(
   { tags: [CACHE_TAGS.categories], revalidate: CACHE_TTL.day },
 );
 
-async function getProducts(params: SearchParams) {
-  const department = params.department as Department | undefined;
+async function getProducts(dept: Dept, params: SearchParams) {
   const sort = (params.sort ?? "newest") as SortKey;
   const sale = params.sale === "true";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
   const limit = 48;
   const offset = (page - 1) * limit;
 
-  const conditions = [eq(products.isActive, true)];
-  if (department && department !== "all") {
-    conditions.push(eq(products.department, department));
-  }
+  const conditions = [
+    eq(products.isActive, true),
+    eq(products.department, dept),
+  ];
+
   if (sale) conditions.push(eq(products.isSale, true));
   if (params.category)
     conditions.push(eq(products.categoryId, params.category));
   if (params.brand) conditions.push(eq(products.brand, params.brand));
   if (params.q?.trim()) {
-    // Normalise query: replace whitespace with ' & ' for tsquery AND semantics
     const tsQuery = params.q
       .trim()
       .split(/\s+/)
@@ -154,14 +181,10 @@ function buildFilterGroups(
     slug: string;
     department: string | null;
   }>,
-  department?: string,
+  dept: Dept,
 ): FilterGroup[] {
   const filteredCats = cats.filter(
-    (c) =>
-      !department ||
-      department === "all" ||
-      c.department === department ||
-      c.department === "all",
+    (c) => c.department === dept || c.department === "all",
   );
 
   return [
@@ -189,30 +212,36 @@ function buildFilterGroups(
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function ProductsPage({
+export default async function DeptProductsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ dept: string }>;
   searchParams: Promise<SearchParams>;
 }) {
-  const params = await searchParams;
+  const { dept: deptParam } = await params;
+  const dept = deptParam as Dept;
+
+  // Validate against active site config depts
+  const config = await getSiteConfig();
+  if (!config.activeDepartments.includes(dept as Department)) {
+    notFound();
+  }
+
+  const sp = await searchParams;
   const [{ items, total }, cats] = await Promise.all([
-    getProducts(params),
+    getProducts(dept, sp),
     getCategories(),
   ]);
 
-  const filterGroups = buildFilterGroups(cats, params.department);
+  const filterGroups = buildFilterGroups(cats, dept);
+  const deptLabel = DEPT_LABELS[dept];
 
-  const heading = params.q
-    ? `Results for "${params.q}"`
-    : params.sale === "true"
-      ? "Sale"
-      : params.department === "women"
-        ? "Women"
-        : params.department === "men"
-          ? "Men"
-          : params.department === "beauty"
-            ? "Beauty"
-            : "All Products";
+  const heading = sp.q
+    ? `Results for "${sp.q}"`
+    : sp.sale === "true"
+      ? `${deptLabel} Sale`
+      : deptLabel;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -247,7 +276,7 @@ export default async function ProductsPage({
           {/* Product cards */}
           <VirtualProductGrid products={items} />
 
-          {/* Simple pagination */}
+          {/* Pagination note */}
           {total > 48 && (
             <div className="mt-10 text-center text-sm text-muted-foreground">
               Showing {Math.min(total, 48)} of {total} items —{" "}

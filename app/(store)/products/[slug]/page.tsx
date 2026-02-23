@@ -160,6 +160,10 @@ export async function generateMetadata({
       )
     : undefined;
 
+  const ogImages = ogImage
+    ? [{ url: ogImage, width: 1200, height: 630, alt: product.name }]
+    : [{ url: "/logo.png", alt: config.siteName }];
+
   return {
     title: `${product.name} | ${config.siteName}`,
     description:
@@ -167,14 +171,14 @@ export async function generateMetadata({
     openGraph: {
       title: product.name,
       description: product.description ?? undefined,
-      images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : [],
+      images: ogImages,
       type: "website",
     },
     twitter: {
-      card: "summary_large_image",
+      card: ogImage ? "summary_large_image" : "summary",
       title: product.name,
       description: product.description ?? undefined,
-      images: ogImage ? [ogImage] : [],
+      images: ogImage ? [ogImage] : ["/logo.png"],
     },
   };
 }

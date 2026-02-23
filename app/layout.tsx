@@ -32,6 +32,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
   ),
+  openGraph: {
+    siteName: "Riziki",
+    images: [{ url: "/logo.png", alt: "Riziki" }],
+  },
+  twitter: {
+    card: "summary",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

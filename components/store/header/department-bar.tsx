@@ -27,7 +27,7 @@ export function DepartmentBar({ activeDepartments }: DepartmentBarProps) {
 
   function handleSelect(dept: Department) {
     setDepartment(dept); // update Zustand (mega menu, search bar, etc.)
-    router.push(`/?dept=${dept}`); // navigate to the dept storefront home
+    router.push(`/${dept}`); // navigate to the dept storefront home
   }
 
   return (

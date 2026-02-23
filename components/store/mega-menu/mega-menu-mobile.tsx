@@ -22,6 +22,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronRight } from "lucide-react";
 import { QueryKeys } from "@/hooks/use-store-queries";
 
+/**
+ * Rewrite a DB-stored href like `/products?category=shoes` to
+ * `/${dept}/products?category=shoes`, stripping any stale `department=` param.
+ */
+function resolveMegaMenuHref(href: string, dept: string | null): string {
+  if (!href.startsWith("/products")) return href;
+  const [, search] = href.split("?");
+  const params = new URLSearchParams(search ?? "");
+  params.delete("department");
+  const qs = params.toString();
+  const base = dept ? `/${dept}/products` : "/products";
+  return qs ? `${base}?${qs}` : base;
+}
+
 interface MegaMenuSection {
   id: string;
   label: string;
@@ -80,7 +94,7 @@ export function MegaMenuMobile({
             {activeDepartments.map((dept) => (
               <Link
                 key={dept}
-                href={`/products?department=${dept}`}
+                href={`/${dept}`}
                 onClick={onClose}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground capitalize"
               >
@@ -131,7 +145,7 @@ export function MegaMenuMobile({
                       {section.items.map((item) => (
                         <li key={item.id}>
                           <Link
-                            href={item.href}
+                            href={resolveMegaMenuHref(item.href, department)}
                             onClick={onClose}
                             className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-accent"
                           >
@@ -160,7 +174,10 @@ export function MegaMenuMobile({
                           <Separator className="my-1" />
                           <li>
                             <Link
-                              href={section.href}
+                              href={resolveMegaMenuHref(
+                                section.href,
+                                department,
+                              )}
                               onClick={onClose}
                               className="flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-primary hover:bg-accent"
                             >
