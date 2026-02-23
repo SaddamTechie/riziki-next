@@ -102,7 +102,11 @@ export function MegaMenuMobile({
               </Link>
             ))}
             <Link
-              href="/products?sale=true"
+              href={
+                department
+                  ? `/${department}/products?sale=true`
+                  : "/products?sale=true"
+              }
               onClick={onClose}
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >

@@ -29,7 +29,13 @@ export function truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max) + "…" : str;
 }
 
-/** Build a Cloudinary 1200×630 Open-Graph image URL from a public ID. */
+/** Build a Cloudinary 1200×630 Open-Graph image URL from a public ID.
+ *  Forces f_jpg — WhatsApp's link-preview crawler rejects WebP (f_auto).
+ *  If publicId is already an absolute URL (e.g. a placeholder/external image),
+ *  it is returned as-is to avoid wrapping it inside a Cloudinary transform. */
 export function getOgImageUrl(publicId: string, cloudName: string): string {
-  return `https://res.cloudinary.com/${cloudName}/image/upload/w_1200,h_630,c_fill,f_auto,q_auto/${publicId}`;
+  if (publicId.startsWith("http://") || publicId.startsWith("https://")) {
+    return publicId;
+  }
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_1200,h_630,c_fill,f_jpg,q_auto/${publicId}`;
 }

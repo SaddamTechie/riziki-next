@@ -160,8 +160,17 @@ export async function generateMetadata({
       )
     : undefined;
 
+  const isCloudinaryUrl = ogImage?.includes("res.cloudinary.com");
   const ogImages = ogImage
-    ? [{ url: ogImage, width: 1200, height: 630, alt: product.name }]
+    ? [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+          ...(isCloudinaryUrl && { type: "image/jpeg" }),
+        },
+      ]
     : [{ url: "/logo.png", alt: config.siteName }];
 
   return {
@@ -218,18 +227,22 @@ export default async function ProductDetailPage({
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            <BreadcrumbLink href={`/${product.department}`}>
+              Home
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+            <BreadcrumbLink href={`/${product.department}/products`}>
+              Products
+            </BreadcrumbLink>
           </BreadcrumbItem>
           {product.category && (
             <>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink
-                  href={`/products?category=${product.category.slug}`}
+                  href={`/${product.department}/products?category=${product.category.slug}`}
                 >
                   {product.category.name}
                 </BreadcrumbLink>

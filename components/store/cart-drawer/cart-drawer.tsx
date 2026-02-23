@@ -17,6 +17,7 @@ import { Minus, Plus, Trash2, ShoppingBag, Heart } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice } from "@/lib/utils";
+import { useDepartmentStore } from "@/stores/department.store";
 
 export function CartDrawer() {
   const {
@@ -30,6 +31,7 @@ export function CartDrawer() {
   } = useCartStore();
 
   const { toggleWishlist, isWishlisted } = useWishlistStore();
+  const department = useDepartmentStore((s) => s.selected);
   const count = itemCount();
   const total = subtotal();
 
@@ -66,7 +68,11 @@ export function CartDrawer() {
                 onClick={closeCart}
                 asChild
               >
-                <Link href="/products">Browse Products</Link>
+                <Link
+                  href={department ? `/${department}/products` : "/products"}
+                >
+                  Browse Products
+                </Link>
               </Button>
             </div>
           ) : (

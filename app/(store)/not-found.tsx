@@ -22,7 +22,7 @@ export default function StoreNotFound() {
           <Link href="/">Go home</Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/products">
+          <Link href="/">
             <ShoppingBag className="mr-2 h-4 w-4" />
             View all products
           </Link>
