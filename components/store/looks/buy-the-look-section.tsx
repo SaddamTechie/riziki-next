@@ -25,30 +25,37 @@ interface LookCard {
 
 interface BuyTheLookSectionProps {
   looks: LookCard[];
+  /** When true, hides the "Buy the Look" heading and "View all" link (used on the /looks browse page) */
+  hideHeader?: boolean;
 }
 
-export function BuyTheLookSection({ looks }: BuyTheLookSectionProps) {
+export function BuyTheLookSection({
+  looks,
+  hideHeader = false,
+}: BuyTheLookSectionProps) {
   if (!looks.length) return null;
 
   return (
     <section className="py-12 sm:py-16" aria-label="Buy the Look">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between">
-          <div>
-            <Badge variant="outline" className="mb-2 text-xs">
-              Editorial
-            </Badge>
-            <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-              Buy the Look
-            </h2>
+        {!hideHeader && (
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <Badge variant="outline" className="mb-2 text-xs">
+                Editorial
+              </Badge>
+              <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+                Buy the Look
+              </h2>
+            </div>
+            <Link
+              href="/looks"
+              className="text-sm font-medium underline underline-offset-4 hover:no-underline"
+            >
+              View all looks
+            </Link>
           </div>
-          <Link
-            href="/looks"
-            className="text-sm font-medium underline underline-offset-4 hover:no-underline"
-          >
-            View all looks
-          </Link>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {looks.map((look) => (

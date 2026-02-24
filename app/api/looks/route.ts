@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const parsed = createLookSchema.safeParse(body);
     if (!parsed.success) {
       console.error("[looks POST] validation:", parsed.error.flatten());
-      return badRequest(parsed.error.message);
+      return badRequest(JSON.stringify(parsed.error.flatten().fieldErrors));
     }
 
     const { productIds, slug: slugInput, ...lookData } = parsed.data;
@@ -102,6 +102,21 @@ export async function POST(request: NextRequest) {
           sortOrder: i,
         })),
       );
+
+      // Compute and persist totalPrice
+      const priceRows = await db
+        .select({ price: products.price })
+        .from(lookItems)
+        .innerJoin(products, eq(lookItems.productId, products.id))
+        .where(eq(lookItems.lookId, id));
+      const total = priceRows.reduce(
+        (sum, r) => sum + parseFloat(r.price ?? "0"),
+        0,
+      );
+      await db
+        .update(looks)
+        .set({ totalPrice: total.toFixed(2) })
+        .where(eq(looks.id, id));
     }
 
     revalidateTag(CACHE_TAGS.looks);

@@ -6,7 +6,7 @@
 
 import { type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { looks, lookItems } from "@/lib/db/schema";
+import { looks, lookItems, products } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { storage } from "@/lib/storage";
 import { revalidateTag } from "@/lib/cache/revalidate";
@@ -22,6 +22,21 @@ import {
   serverError,
 } from "@/lib/api/helpers";
 import { z } from "zod";
+
+/** Re-compute and persist totalPrice for a look from its current items. */
+async function recalculateTotalPrice(lookId: string) {
+  const rows = await db
+    .select({ price: products.price })
+    .from(lookItems)
+    .innerJoin(products, eq(lookItems.productId, products.id))
+    .where(eq(lookItems.lookId, lookId));
+
+  const total = rows.reduce((sum, r) => sum + parseFloat(r.price ?? "0"), 0);
+  await db
+    .update(looks)
+    .set({ totalPrice: total.toFixed(2) })
+    .where(eq(looks.id, lookId));
+}
 
 const updateLookSchema = z
   .object({
@@ -106,17 +121,20 @@ export async function PATCH(
 
     if (!updated) return notFound("Look not found");
 
-    // Replace items if productIds provided
-    if (productIds && productIds.length > 0) {
+    // Replace items if productIds was explicitly provided (even empty = clear all)
+    if (productIds !== undefined) {
       await db.delete(lookItems).where(eq(lookItems.lookId, id));
-      await db.insert(lookItems).values(
-        productIds.map((productId, i) => ({
-          id: generateId(),
-          lookId: id,
-          productId,
-          sortOrder: i,
-        })),
-      );
+      if (productIds.length > 0) {
+        await db.insert(lookItems).values(
+          productIds.map((productId, i) => ({
+            id: generateId(),
+            lookId: id,
+            productId,
+            sortOrder: i,
+          })),
+        );
+      }
+      await recalculateTotalPrice(id);
     }
 
     revalidateTag(CACHE_TAGS.looks);
