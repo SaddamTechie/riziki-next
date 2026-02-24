@@ -9,8 +9,15 @@ import { useWishlistStore } from "@/stores/wishlist.store";
 import { ThemeToggle } from "@/components/store/theme-toggle/theme-toggle";
 import { MegaMenuDesktop } from "@/components/store/mega-menu/mega-menu-desktop";
 import { MegaMenuMobile } from "@/components/store/mega-menu/mega-menu-mobile";
-import { SearchBar } from "./search-bar";
+import dynamic from "next/dynamic";
 import { StorageImage } from "@/components/shared/storage-image";
+
+// Lazy-load SearchBar so framer-motion is NOT included in the initial bundle.
+// The search overlay is only shown on user interaction, so lazy loading is safe.
+const SearchBar = dynamic(
+  () => import("./search-bar").then((m) => ({ default: m.SearchBar })),
+  { ssr: false },
+);
 import type { SiteConfig } from "@/lib/config/site";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";

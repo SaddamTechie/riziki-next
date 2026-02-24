@@ -1,6 +1,8 @@
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "@/lib/cache/keys";
 import { db } from "@/lib/db";
 import {
   products,
@@ -33,111 +35,139 @@ import { env } from "@/lib/env";
 
 // ─── Data fetcher ─────────────────────────────────────────────────────────────
 
-async function getProduct(slug: string) {
-  const [product] = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.slug, slug), eq(products.isActive, true)))
-    .limit(1);
+/**
+ * Fetch product data from the DB.
+ * - `unstable_cache` persists the result across requests (1 hour TTL, tagged
+ *   for targeted revalidation from the admin).
+ * - `cache()` deduplicates calls within a single render pass so that both
+ *   `generateMetadata` and the page component share one result instead of
+ *   issuing two DB round-trips.
+ */
+const getProduct = cache((slug: string) =>
+  unstable_cache(
+    async () => {
+      const [product] = await db
+        .select()
+        .from(products)
+        .where(and(eq(products.slug, slug), eq(products.isActive, true)))
+        .limit(1);
 
-  if (!product) return null;
+      if (!product) return null;
 
-  const [images, variants, category] = await Promise.all([
-    db
-      .select()
-      .from(productImages)
-      .where(eq(productImages.productId, product.id))
-      .orderBy(productImages.sortOrder),
-    db
-      .select()
-      .from(productVariants)
-      .where(
-        and(
-          eq(productVariants.productId, product.id),
-          eq(productVariants.isActive, true),
-        ),
-      )
-      .orderBy(productVariants.size),
-    db
-      .select({ name: categoriesTable.name, slug: categoriesTable.slug })
-      .from(categoriesTable)
-      .where(eq(categoriesTable.id, product.categoryId))
-      .limit(1),
-  ]);
+      const [images, variants, category] = await Promise.all([
+        db
+          .select()
+          .from(productImages)
+          .where(eq(productImages.productId, product.id))
+          .orderBy(productImages.sortOrder),
+        db
+          .select()
+          .from(productVariants)
+          .where(
+            and(
+              eq(productVariants.productId, product.id),
+              eq(productVariants.isActive, true),
+            ),
+          )
+          .orderBy(productVariants.size),
+        db
+          .select({ name: categoriesTable.name, slug: categoriesTable.slug })
+          .from(categoriesTable)
+          .where(eq(categoriesTable.id, product.categoryId))
+          .limit(1),
+      ]);
 
-  return {
-    ...product,
-    price: parseFloat(product.price ?? "0"),
-    compareAtPrice: product.compareAtPrice
-      ? parseFloat(product.compareAtPrice)
-      : null,
-    images,
-    variants: variants.map((v) => ({
-      id: v.id,
-      size: v.size,
-      color: v.color,
-      colorHex: v.colorHex,
-      stock: v.stock,
-      price: parseFloat(v.price),
-    })),
-    category: category[0] ?? null,
-  };
-}
+      return {
+        ...product,
+        price: parseFloat(product.price ?? "0"),
+        compareAtPrice: product.compareAtPrice
+          ? parseFloat(product.compareAtPrice)
+          : null,
+        images,
+        variants: variants.map((v) => ({
+          id: v.id,
+          size: v.size,
+          color: v.color,
+          colorHex: v.colorHex,
+          stock: v.stock,
+          price: parseFloat(v.price),
+        })),
+        category: category[0] ?? null,
+      };
+    },
+    ["product", slug],
+    {
+      tags: [CACHE_TAGS.products, CACHE_TAGS.product(slug)],
+      revalidate: CACHE_TTL.hour,
+    },
+  )(),
+);
 
-async function getRelatedLooks(productId: string) {
-  const items = await db
-    .select({ lookId: lookItems.lookId })
-    .from(lookItems)
-    .where(eq(lookItems.productId, productId));
+const getRelatedLooks = cache((productId: string) =>
+  unstable_cache(
+    async () => {
+      const items = await db
+        .select({ lookId: lookItems.lookId })
+        .from(lookItems)
+        .where(eq(lookItems.productId, productId));
 
-  if (!items.length) return [];
+      if (!items.length) return [];
 
-  const lookIds = items.map((i) => i.lookId);
+      const lookIds = items.map((i) => i.lookId);
 
-  const lookData = await db
-    .select()
-    .from(looks)
-    .where(and(eq(looks.isActive, true), inArray(looks.id, lookIds)))
-    .limit(3);
+      const [lookData, lookItemRows] = await Promise.all([
+        db
+          .select()
+          .from(looks)
+          .where(and(eq(looks.isActive, true), inArray(looks.id, lookIds)))
+          .limit(3),
+        // Only fetch look_items rows that belong to the matched looks
+        db
+          .select({
+            lookId: lookItems.lookId,
+            productId: lookItems.productId,
+            productSlug: products.slug,
+            productName: products.name,
+            price: products.price,
+            imagePublicId: productImages.publicId,
+          })
+          .from(lookItems)
+          .innerJoin(products, eq(lookItems.productId, products.id))
+          .leftJoin(
+            productImages,
+            and(
+              eq(productImages.productId, products.id),
+              eq(productImages.isPrimary, true),
+            ),
+          )
+          .where(inArray(lookItems.lookId, lookIds)),
+      ]);
 
-  // Map to the shape BuyTheLookSection expects
-  const allLookItems = await db
-    .select({
-      lookId: lookItems.lookId,
-      productId: lookItems.productId,
-      productSlug: products.slug,
-      productName: products.name,
-      price: products.price,
-      imagePublicId: productImages.publicId,
-    })
-    .from(lookItems)
-    .innerJoin(products, eq(lookItems.productId, products.id))
-    .leftJoin(
-      productImages,
-      and(
-        eq(productImages.productId, products.id),
-        eq(productImages.isPrimary, true),
-      ),
-    );
-
-  return lookData.map((look) => ({
-    id: look.id,
-    slug: look.slug,
-    title: look.name,
-    imagePublicId: look.coverImagePublicId ?? "",
-    imageBlurDataUrl: look.coverImageBlurDataUrl,
-    totalPrice: parseFloat(look.totalPrice ?? "0"),
-    items: allLookItems
-      .filter((i) => i.lookId === look.id)
-      .map((i) => ({
-        productId: i.productId,
-        productSlug: i.productSlug,
-        productName: i.productName,
-        imagePublicId: i.imagePublicId ?? "",
-        price: parseFloat(i.price ?? "0"),
-      })),
-  }));
-}
+      return lookData.map((look) => ({
+        id: look.id,
+        slug: look.slug,
+        title: look.name,
+        imagePublicId: look.coverImagePublicId ?? "",
+        imageBlurDataUrl: look.coverImageBlurDataUrl,
+        totalPrice: parseFloat(look.totalPrice ?? "0"),
+        items: lookItemRows
+          .filter((i) => i.lookId === look.id)
+          .map((i) => ({
+            productId: i.productId,
+            productSlug: i.productSlug,
+            productName: i.productName,
+            imagePublicId: i.imagePublicId ?? "",
+            price: parseFloat(i.price ?? "0"),
+          })),
+      }));
+    },
+    ["related-looks", productId],
+    {
+      tags: [CACHE_TAGS.looks, CACHE_TAGS.products],
+      revalidate: CACHE_TTL.hour,
+    },
+  )(),
+);
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 

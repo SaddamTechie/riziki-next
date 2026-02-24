@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Heart, ShoppingBag } from "lucide-react";
 import { StorageImage } from "@/components/shared/storage-image";
 import { Badge } from "@/components/ui/badge";
@@ -148,18 +147,14 @@ export function ProductCard({
         </div>
 
         {/* Wishlist button */}
-        <motion.button
+        <button
           className={cn(
             "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm border",
-            "transition-colors hover:bg-background",
-          )}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={
+            "transition-all duration-150 hover:bg-background",
             hovered || wishlisted
-              ? { opacity: 1, scale: 1 }
-              : { opacity: 0, scale: 0.8 }
-          }
-          transition={{ duration: 0.15 }}
+              ? "opacity-100 scale-100"
+              : "opacity-0 scale-[0.8]",
+          )}
           onClick={handleWishlist}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -171,15 +166,15 @@ export function ProductCard({
                 : "text-foreground",
             )}
           />
-        </motion.button>
+        </button>
 
         {/* Quick-add button (only if there's a default variant) */}
         {product.defaultVariantId && (
-          <motion.div
-            className="absolute bottom-2 left-2 right-2"
-            initial={{ opacity: 0, y: 8 }}
-            animate={hovered ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-            transition={{ duration: 0.15 }}
+          <div
+            className={cn(
+              "absolute bottom-2 left-2 right-2 transition-all duration-150",
+              hovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+            )}
           >
             <Button
               size="sm"
@@ -189,7 +184,7 @@ export function ProductCard({
               <ShoppingBag className="h-3.5 w-3.5" />
               Quick Add
             </Button>
-          </motion.div>
+          </div>
         )}
       </div>
 
