@@ -23,11 +23,14 @@ import { z } from "zod";
 const updateVariantSchema = z
   .object({
     size: z.string().min(1),
-    color: z.string().min(1),
-    colorHex: z.string().nullable(),
-    sku: z.string().nullable(),
-    price: z.string().min(1),
-    compareAtPrice: z.string().nullable(),
+    color: z.string(),
+    colorHex: z.string().nullish(),
+    sku: z.string().nullish(),
+    price: z.union([z.string(), z.number()]).transform((v) => String(v)),
+    compareAtPrice: z
+      .union([z.string(), z.number()])
+      .transform((v) => String(v))
+      .nullish(),
     stock: z.number().int().min(0),
     isActive: z.boolean(),
   })
@@ -44,7 +47,8 @@ export async function PATCH(
     const { id, variantId } = await params;
     const body = await request.json();
     const parsed = updateVariantSchema.safeParse(body);
-    if (!parsed.success) return badRequest(parsed.error.message);
+    if (!parsed.success)
+      return badRequest(JSON.stringify(parsed.error.flatten().fieldErrors));
 
     const [updated] = await db
       .update(productVariants)

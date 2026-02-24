@@ -167,7 +167,7 @@ export function ProductCard({
             className={cn(
               "h-4 w-4 transition-colors",
               wishlisted
-                ? "fill-destructive text-destructive"
+                ? "fill-foreground text-foreground"
                 : "text-foreground",
             )}
           />

@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "Careers at Riziki",
-  description:
-    "Join the Riziki team — we're looking for passionate, creative people to help shape the future of African fashion.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  return {
+    title: `Careers at ${config.siteName}`,
+    description: `Join the ${config.siteName} team — we're looking for passionate, creative people to help shape the future of African fashion.`,
+  };
+}
 
-export default function CareersPage() {
+export default async function CareersPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
-      title="Careers at Riziki"
+      title={`Careers at ${config.siteName}`}
       subtitle="We're building the future of fashion retail in Africa. Want to be part of it?"
     >
       <section className="space-y-3">
@@ -54,9 +59,13 @@ export default function CareersPage() {
         <h2 className="font-heading text-base font-bold">How to Apply</h2>
         <p>
           Send your CV and a short note about why you want to work with us to{" "}
-          <a href="mailto:careers@riziki.co.ke" className="underline">
-            careers@riziki.co.ke
-          </a>
+          {contactEmail ? (
+            <a href={`mailto:${contactEmail}`} className="underline">
+              {contactEmail}
+            </a>
+          ) : (
+            "our team"
+          )}
           . We review every application and aim to respond within two weeks.
         </p>
       </section>

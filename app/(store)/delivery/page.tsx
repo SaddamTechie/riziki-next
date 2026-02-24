@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   title: "Delivery Information",
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
     "Find out about our delivery options, timelines and costs for orders across Kenya and internationally.",
 };
 
-export default function DeliveryPage() {
+export default async function DeliveryPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Delivery Information"
@@ -71,11 +74,17 @@ export default function DeliveryPage() {
       </section>
 
       <p className="text-xs text-muted-foreground">
-        Last updated: January 2026. Delivery fees are subject to change. Contact{" "}
-        <a href="mailto:support@riziki.co.ke" className="underline">
-          support@riziki.co.ke
-        </a>{" "}
-        for any delivery queries.
+        Last updated: January 2026. Delivery fees are subject to change.
+        {contactEmail && (
+          <>
+            {" "}
+            Contact{" "}
+            <a href={`mailto:${contactEmail}`} className="underline">
+              {contactEmail}
+            </a>{" "}
+            for any delivery queries.
+          </>
+        )}
       </p>
     </StaticPage>
   );

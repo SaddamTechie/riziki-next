@@ -3,6 +3,7 @@ import { Playfair_Display, Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import { getSiteConfig } from "@/lib/config/site";
 
 // ─── Typography configuration ───────────────────────────────────────────────
 // To swap fonts for the entire app, change ONLY these two imports + configs.
@@ -23,24 +24,29 @@ const uiFont = Nunito({
 });
 // ────────────────────────────────────────────────────────────────────────────
 
-export const metadata: Metadata = {
-  title: {
-    default: "Riziki — Fashion",
-    template: "%s | Riziki",
-  },
-  description: "Discover the latest fashion trends at Riziki.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
-  ),
-  openGraph: {
-    siteName: "Riziki",
-    images: [{ url: "/logo.png", alt: "Riziki" }],
-  },
-  twitter: {
-    card: "summary",
-    images: ["/logo.png"],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  const name = config.siteName;
+  return {
+    title: {
+      default: `${name} — Fashion`,
+      template: `%s | ${name}`,
+    },
+    description:
+      config.seoDescription || `Discover the latest fashion trends at ${name}.`,
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
+    ),
+    openGraph: {
+      siteName: name,
+      images: [{ url: "/logo.png", alt: name }],
+    },
+    twitter: {
+      card: "summary",
+      images: ["/logo.png"],
+    },
+  };
+}
 
 export default function RootLayout({
   children,

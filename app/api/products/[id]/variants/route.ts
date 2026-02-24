@@ -23,11 +23,14 @@ import { z } from "zod";
 
 const createVariantSchema = z.object({
   size: z.string().min(1),
-  color: z.string().min(1),
-  colorHex: z.string().optional(),
-  sku: z.string().optional(),
-  price: z.string().min(1), // decimal string e.g. "1500.00"
-  compareAtPrice: z.string().optional().nullable(),
+  color: z.string().default(""), // not all products have colour options
+  colorHex: z.string().nullish(),
+  sku: z.string().nullish(),
+  price: z.union([z.string(), z.number()]).transform((v) => String(v)),
+  compareAtPrice: z
+    .union([z.string(), z.number()])
+    .transform((v) => String(v))
+    .nullish(),
   stock: z.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
 });
@@ -74,9 +77,7 @@ export async function POST(
     const body = await request.json();
     const parsed = createVariantSchema.safeParse(body);
     if (!parsed.success)
-      return badRequest(
-        parsed.error.flatten().fieldErrors as unknown as string,
-      );
+      return badRequest(JSON.stringify(parsed.error.flatten().fieldErrors));
 
     const variantId = generateId();
     await db.insert(productVariants).values({

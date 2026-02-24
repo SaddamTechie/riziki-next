@@ -232,7 +232,7 @@ export function VariantPicker({
           <Heart
             className={cn(
               "h-5 w-5 transition-colors",
-              wishlisted && "fill-destructive text-destructive",
+              wishlisted && "fill-foreground text-foreground",
             )}
           />
         </Button>

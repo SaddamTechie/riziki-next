@@ -74,14 +74,18 @@ export function RecentlyViewed({
               className="group inline-block w-40 shrink-0"
             >
               <div className="relative aspect-3/4 w-40 overflow-hidden rounded-lg bg-muted">
-                <StorageImage
-                  src={item.imagePublicId}
-                  blurDataUrl={item.imageBlurDataUrl ?? undefined}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="160px"
-                />
+                {item.imagePublicId ? (
+                  <StorageImage
+                    src={item.imagePublicId}
+                    blurDataUrl={item.imageBlurDataUrl ?? undefined}
+                    alt={item.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="160px"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-muted" />
+                )}
               </div>
               <p className="mt-2 line-clamp-1 text-xs font-medium group-hover:underline">
                 {item.name}

@@ -15,8 +15,8 @@
 import Image, { type ImageProps } from "next/image";
 
 interface StorageImageProps extends Omit<ImageProps, "src"> {
-  /** Cloudinary public ID (e.g. "riziki/products/abc123") or a full URL */
-  src: string;
+  /** Cloudinary public ID (e.g. "riziki/products/abc123") or a full URL. Null/empty renders nothing. */
+  src: string | null | undefined;
   /** Blur placeholder base64 string stored at upload time */
   blurDataUrl?: string;
 }
@@ -27,6 +27,10 @@ export function StorageImage({
   alt,
   ...props
 }: StorageImageProps) {
+  // Guard: empty or missing src would cause Next.js to re-fetch the page.
+  // Render nothing (the parent is responsible for sizing via fill/width/height).
+  if (!src) return null;
+
   return (
     <Image
       src={src}

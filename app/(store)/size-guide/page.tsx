@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
 export const metadata: Metadata = {
   title: "Size Guide",
@@ -40,7 +41,9 @@ function SizeTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
   );
 }
 
-export default function SizeGuidePage() {
+export default async function SizeGuidePage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
   return (
     <StaticPage
       title="Size Guide"
@@ -134,11 +137,20 @@ export default function SizeGuidePage() {
       </section>
 
       <p className="text-xs text-muted-foreground">
-        Still unsure? Email{" "}
-        <a href="mailto:support@riziki.co.ke" className="underline">
-          support@riziki.co.ke
-        </a>{" "}
-        with the item and your measurements and we&apos;ll advise the best fit.
+        Still unsure?
+        {contactEmail ? (
+          <>
+            {" "}
+            Email{" "}
+            <a href={`mailto:${contactEmail}`} className="underline">
+              {contactEmail}
+            </a>{" "}
+            with the item and your measurements and we&apos;ll advise the best
+            fit.
+          </>
+        ) : (
+          " Contact us with the item and your measurements and we'll advise the best fit."
+        )}
       </p>
     </StaticPage>
   );

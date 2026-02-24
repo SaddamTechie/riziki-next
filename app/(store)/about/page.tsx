@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
+import { getSiteConfig } from "@/lib/config/site";
 
-export const metadata: Metadata = {
-  title: "About Riziki",
-  description:
-    "Learn about our story, mission and the team behind Riziki — Kenya's premier online fashion destination.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  return {
+    title: `About ${config.siteName}`,
+    description: `Learn about our story, mission and the team behind ${config.siteName} — Kenya's premier online fashion destination.`,
+  };
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const config = await getSiteConfig();
+  const contactEmail = config.contactEmail;
+  const instagram = config.socialLinks?.instagram;
   return (
     <StaticPage
-      title="About Riziki"
-      subtitle="Kenya's premier online destination for contemporary fashion, beauty and lifestyle."
+      title={`About ${config.siteName}`}
+      subtitle={
+        config.siteTagline ||
+        "Kenya's premier online destination for contemporary fashion, beauty and lifestyle."
+      }
     >
       <section className="space-y-3">
         <h2 className="font-heading text-base font-bold">Our Story</h2>
@@ -69,19 +78,36 @@ export default function AboutPage() {
       <section className="space-y-3">
         <h2 className="font-heading text-base font-bold">Get in Touch</h2>
         <p>
-          We love hearing from our community. Reach us at{" "}
-          <a href="mailto:hello@riziki.co.ke" className="underline">
-            hello@riziki.co.ke
-          </a>{" "}
-          or follow us on Instagram{" "}
-          <a
-            href="https://instagram.com/rizikifashion"
-            className="underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            @rizikifashion
-          </a>
+          We love hearing from our community.
+          {contactEmail && (
+            <>
+              {" "}
+              Reach us at{" "}
+              <a href={`mailto:${contactEmail}`} className="underline">
+                {contactEmail}
+              </a>
+            </>
+          )}
+          {instagram && (
+            <>
+              {" "}
+              or follow us on Instagram{" "}
+              <a
+                href={
+                  instagram.startsWith("http")
+                    ? instagram
+                    : `https://instagram.com/${instagram.replace("@", "")}`
+                }
+                className="underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {instagram.startsWith("@")
+                  ? instagram
+                  : `@${instagram.split("/").pop()}`}
+              </a>
+            </>
+          )}
           .
         </p>
       </section>
