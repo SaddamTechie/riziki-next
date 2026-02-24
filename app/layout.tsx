@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
 import { getSiteConfig } from "@/lib/config/site";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { env } from "@/lib/env";
 
 // ─── Typography configuration ───────────────────────────────────────────────
 // To swap fonts for the entire app, change ONLY these two imports + configs.
@@ -60,6 +62,10 @@ export default function RootLayout({
       >
         <Providers>{children}</Providers>
         <Toaster richColors position="top-center" />
+        {env.NEXT_PUBLIC_GA_MEASUREMENT_ID &&
+          process.env.NODE_ENV === "production" && (
+            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+          )}
       </body>
     </html>
   );
