@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
 import { getSiteConfig } from "@/lib/config/site";
+import { PRIVACY_PAGE } from "@/lib/config/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
@@ -12,102 +13,32 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const config = await getSiteConfig();
-  const contactEmail = config.contactEmail;
+  const contactEmail = config.contactEmail ?? "our privacy team";
+
+  function interpolate(text: string) {
+    return text
+      .replace(/\{email\}/g, contactEmail)
+      .replace(
+        /\{dataRequestResponseDays\}/g,
+        String(PRIVACY_PAGE.dataRequestResponseDays),
+      );
+  }
+
   return (
-    <StaticPage
-      title="Privacy Policy"
-      subtitle="Effective date: 1 January 2025. We respect your privacy and are committed to protecting your personal data."
-    >
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">
-          1. Information We Collect
-        </h2>
-        <p>
-          We collect information you provide directly (name, email, shipping
-          address, payment details) and information generated through your use
-          of our service (browsing history, purchase history, device identifiers
-          and IP address).
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">
-          2. How We Use Your Information
-        </h2>
-        <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
-          <li>To fulfil and manage your orders</li>
-          <li>To process payments securely</li>
-          <li>To send order confirmations and shipping updates</li>
-          <li>
-            To send marketing emails (only with your consent — you can
-            unsubscribe at any time)
-          </li>
-          <li>To improve our website and personalise your experience</li>
-          <li>To detect and prevent fraudulent transactions</li>
-        </ul>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">
-          3. Sharing Your Data
-        </h2>
-        <p>
-          We do not sell your personal data. We share data with third-party
-          service providers only as necessary to operate our business (payment
-          processors, logistics partners, email service providers). All partners
-          are contractually required to handle your data in accordance with
-          applicable data protection laws.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">4. Cookies</h2>
-        <p>
-          We use essential cookies to keep you signed in and maintain your cart.
-          We also use analytics cookies (with your consent) to understand how
-          customers use our website. You can manage cookie preferences in your
-          browser settings.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">5. Your Rights</h2>
-        <p>
-          Under Kenyan data protection law and GDPR (where applicable) you have
-          the right to access, correct, delete, or export your personal data.
-          Submit requests to{" "}
-          <a
-            href={contactEmail ? `mailto:${contactEmail}` : "#"}
-            className="underline"
-          >
-            {contactEmail ?? "our privacy team"}
-          </a>
-          . We will respond within 30 days.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">6. Data Security</h2>
-        <p>
-          We use industry-standard encryption (TLS 1.3) for all data in transit
-          and at rest. We never store raw card numbers — all payment processing
-          is handled by PCI DSS-compliant partners.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">7. Contact</h2>
-        <p>
-          For privacy-related questions contact our Data Protection Officer:{" "}
-          <a
-            href={contactEmail ? `mailto:${contactEmail}` : "#"}
-            className="underline"
-          >
-            {contactEmail ?? "our privacy team"}
-          </a>
-          .
-        </p>
-      </section>
+    <StaticPage title="Privacy Policy" subtitle={PRIVACY_PAGE.subtitle}>
+      {PRIVACY_PAGE.sections.map((s) => (
+        <section key={s.heading} className="space-y-3">
+          <h2 className="font-heading text-base font-bold">{s.heading}</h2>
+          {s.body && <p>{interpolate(s.body)}</p>}
+          {s.items.length > 0 && (
+            <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
+              {s.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
     </StaticPage>
   );
 }

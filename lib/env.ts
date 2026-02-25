@@ -59,6 +59,8 @@ export const env = createEnv({
     NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional(),
     // Google Analytics — optional: only loaded in production when set
     NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+    // Google Search Console — paste the content value from the verification meta tag
+    NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
   },
 
   // ─── Runtime mappings ──────────────────────────────────────────────────────
@@ -86,6 +88,8 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
     NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
 
   // Don't throw during build for missing vars (useful for CI)

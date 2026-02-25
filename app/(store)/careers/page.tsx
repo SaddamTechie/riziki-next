@@ -1,40 +1,33 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
 import { getSiteConfig } from "@/lib/config/site";
+import { CAREERS_PAGE } from "@/lib/config/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   return {
     title: `Careers at ${config.siteName}`,
-    description: `Join the ${config.siteName} team — we're looking for passionate, creative people to help shape the future of African fashion.`,
+    description: `Join the ${config.siteName} team — we're looking for passionate, creative people to help shape the future of fashion.`,
   };
 }
 
 export default async function CareersPage() {
   const config = await getSiteConfig();
   const contactEmail = config.contactEmail;
+
   return (
     <StaticPage
       title={`Careers at ${config.siteName}`}
-      subtitle="We're building the future of fashion retail in Africa. Want to be part of it?"
+      subtitle={CAREERS_PAGE.subtitle}
     >
       <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">Why Riziki?</h2>
+        <h2 className="font-heading text-base font-bold">
+          Why {config.siteName}?
+        </h2>
         <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
-          <li>
-            Work on products used by tens of thousands of fashion-conscious
-            consumers across East Africa
-          </li>
-          <li>
-            Competitive salaries benchmarked against Kenya tech and retail
-            market rates
-          </li>
-          <li>
-            Flexible remote-first culture with optional hot-desking in our
-            Westlands office
-          </li>
-          <li>Quarterly team retreats and a generous clothing allowance</li>
-          <li>Clear growth paths and a learning budget of KES 50,000 p.a.</li>
+          {CAREERS_PAGE.benefits.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
         </ul>
       </section>
 
@@ -47,26 +40,32 @@ export default async function CareersPage() {
           from you.
         </p>
         <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
-          <li>Brand & Marketing</li>
-          <li>Buying & Merchandise</li>
-          <li>Customer Experience</li>
-          <li>Full-Stack Engineering (Next.js, React Native)</li>
-          <li>Warehouse & Logistics (Nairobi)</li>
+          {CAREERS_PAGE.roles.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
         </ul>
       </section>
 
       <section className="space-y-3">
         <h2 className="font-heading text-base font-bold">How to Apply</h2>
         <p>
-          Send your CV and a short note about why you want to work with us to{" "}
-          {contactEmail ? (
-            <a href={`mailto:${contactEmail}`} className="underline">
-              {contactEmail}
-            </a>
-          ) : (
-            "our team"
-          )}
-          . We review every application and aim to respond within two weeks.
+          {CAREERS_PAGE.applicationNote
+            .replace(/\{email\}/g, contactEmail ?? "")
+            .split(contactEmail ?? "__NO_EMAIL__")
+            .map((part, i, arr) =>
+              i < arr.length - 1 ? (
+                <span key={i}>
+                  {part}
+                  {contactEmail && (
+                    <a href={`mailto:${contactEmail}`} className="underline">
+                      {contactEmail}
+                    </a>
+                  )}
+                </span>
+              ) : (
+                <span key={i}>{part}</span>
+              ),
+            )}
         </p>
       </section>
     </StaticPage>

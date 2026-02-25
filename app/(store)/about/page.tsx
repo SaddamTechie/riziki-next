@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/ui/static-page";
 import { getSiteConfig } from "@/lib/config/site";
+import { ABOUT_PAGE } from "@/lib/config/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   return {
     title: `About ${config.siteName}`,
-    description: `Learn about our story, mission and the team behind ${config.siteName} — Kenya's premier online fashion destination.`,
+    description: `Learn about our story, mission and the team behind ${config.siteName}.`,
   };
 }
 
@@ -14,66 +15,31 @@ export default async function AboutPage() {
   const config = await getSiteConfig();
   const contactEmail = config.contactEmail;
   const instagram = config.socialLinks?.instagram;
+
   return (
     <StaticPage
       title={`About ${config.siteName}`}
-      subtitle={
-        config.siteTagline ||
-        "Kenya's premier online destination for contemporary fashion, beauty and lifestyle."
-      }
+      subtitle={config.siteTagline || ""}
     >
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">Our Story</h2>
-        <p>
-          Riziki was founded in 2022 by a team of fashion-forward Kenyans who
-          believed that world-class style should be accessible to everyone on
-          the continent. The name <em>Riziki</em> — Swahili for livelihood and
-          abundance — reflects our belief that dressing well is not a luxury, it
-          is a form of self-expression and confidence.
-        </p>
-        <p>
-          We started as a curated boutique in Westlands, Nairobi and quickly
-          expanded online to reach customers across Kenya and the wider East
-          African region. Today we carry over 500 styles across women, men and
-          beauty categories.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">Our Mission</h2>
-        <p>
-          We exist to make contemporary, trend-driven fashion accessible to
-          every African consumer — from the busy professional in Nairobi CBD to
-          the style-conscious student in Eldoret. Every product on Riziki is
-          hand-picked for quality, fit, and value.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-heading text-base font-bold">Our Values</h2>
-        <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
-          <li>
-            <strong>Authenticity —</strong> We only source from verified,
-            reputable brands and designers, and every product is quality-checked
-            before dispatch.
-          </li>
-          <li>
-            <strong>Inclusivity —</strong> Style has no size. We stock a wide
-            range of sizes and are continually expanding our inclusive
-            collection.
-          </li>
-          <li>
-            <strong>Sustainability —</strong> We are committed to reducing our
-            carbon footprint through responsible sourcing, minimal packaging,
-            and partnership with eco-conscious brands.
-          </li>
-          <li>
-            <strong>Customer First —</strong> From lightning-fast delivery to
-            our 14-day no-hassle return policy, every decision we make starts
-            with our customer.
-          </li>
-        </ul>
-      </section>
+      {ABOUT_PAGE.sections.map((section) => (
+        <section key={section.heading} className="space-y-3">
+          <h2 className="font-heading text-base font-bold">
+            {section.heading}
+          </h2>
+          {section.paragraphs?.map((p, i) => (
+            <p key={i}>{p.replace(/\{siteName\}/g, config.siteName)}</p>
+          ))}
+          {section.items && (
+            <ul className="ml-4 list-disc space-y-1 text-muted-foreground">
+              {section.items.map((item) => (
+                <li key={item.label}>
+                  <strong>{item.label} —</strong> {item.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
 
       <section className="space-y-3">
         <h2 className="font-heading text-base font-bold">Get in Touch</h2>

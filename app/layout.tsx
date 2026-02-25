@@ -39,6 +39,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(
       process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
     ),
+    ...(env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+      verification: {
+        google: env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      },
+    }),
     openGraph: {
       siteName: name,
       images: [{ url: "/logo.png", alt: name }],

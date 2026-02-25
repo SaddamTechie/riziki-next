@@ -207,6 +207,9 @@ export async function generateMetadata({
     title: `${product.name} | ${config.siteName}`,
     description:
       product.description ?? `Shop ${product.name} at ${config.siteName}`,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/products/${product.slug}`,
+    },
     openGraph: {
       title: product.name,
       description: product.description ?? undefined,
@@ -251,8 +254,83 @@ export default async function ProductDetailPage({
 
   const relatedLooks = await getRelatedLooks(product.id);
 
+  // ─── Structured data (JSON-LD) ──────────────────────────────────────────────
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+  const productUrl = `${BASE_URL}/products/${product.slug}`;
+  const ogImageUrl = primaryImage?.publicId
+    ? getOgImageUrl(
+        primaryImage.publicId,
+        env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      )
+    : undefined;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        ...(product.description && { description: product.description }),
+        ...(ogImageUrl && { image: ogImageUrl }),
+        url: productUrl,
+        ...(product.brand && {
+          brand: { "@type": "Brand", name: product.brand },
+        }),
+        offers: {
+          "@type": "Offer",
+          price: product.price,
+          priceCurrency: "KES",
+          availability: product.variants.some((v) => v.stock > 0)
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          url: productUrl,
+          seller: { "@type": "Organization", name: config.siteName },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${BASE_URL}/${product.department}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Products",
+            item: `${BASE_URL}/${product.department}/products`,
+          },
+          ...(product.category
+            ? [
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: product.category.name,
+                  item: `${BASE_URL}/${product.department}/products?category=${product.category.slug}`,
+                },
+              ]
+            : []),
+          {
+            "@type": "ListItem",
+            position: product.category ? 4 : 3,
+            name: product.name,
+            item: productUrl,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Breadcrumb */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
